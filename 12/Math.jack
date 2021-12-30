@@ -1,0 +1,160 @@
+// This file is part of nand2tetris, as taught in The Hebrew University,
+// and was written by Aviv Yaish, and is published under the Creative 
+// Common Attribution-NonCommercial-ShareAlike 3.0 Unported License 
+// https://creativecommons.org/licenses/by-nc-sa/3.0/
+// It is an extension to the specifications given in  
+// https://www.nand2tetris.org (Shimon Schocken and Noam Nisan, 2017)
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0 
+// File name: projects/12/Math.jack
+
+/**
+ * A library of commonly used mathematical functions.
+ * Note: Jack compilers implement multiplication and division using OS method calls.
+ */
+class Math {
+        static int two_power;
+
+    /** Initializes the library. */
+    function void init() {
+        let two_power = Array.new(16);
+        let two_power[0] = 1;
+        let two_power[1] = 2;
+        let two_power[2] = 4;
+        let two_power[3] = 8;
+        let two_power[4] = 16;
+        let two_power[5] = 32;
+        let two_power[6] = 64;
+        let two_power[7] = 128;
+        let two_power[8] = 256;
+        let two_power[9] = 512;
+        let two_power[10] = 1024;
+        let two_power[11] = 2048;
+        let two_power[12] = 4096;
+        let two_power[13] = 8192;
+        let two_power[14] = 16384;
+        let two_power[15] = 16384 + 16384;
+        return;
+    }
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+    if(x>0){
+      return x;
+    }
+    else {
+    return -x;
+    }
+    }
+
+    /** Returns the product of x and y. 
+     *  When a Jack compiler detects the multiplication operator '*' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x*y and multiply(x,y) return the same value.
+     */
+    function int multiply(int x, int y) {
+        var int sum;
+        var int shiftedX;
+        var int j;
+        
+        let sum = 0;
+        let shiftedX = x;
+        let j = 0;
+        while( j < 16 ) {   // 16-bit numbers
+            if(Math.bit(y, j)) {
+                let sum = sum + shiftedX;
+            }
+            let shiftedX = shiftedX + shiftedX;
+            let j = j + 1;
+        }
+        return sum;
+    }
+
+    /** Returns the integer part of x/y.
+     *  When a Jack compiler detects the multiplication operator '/' in the 
+     *  program's code, it handles it by invoking this method. In other words,
+     *  the Jack expressions x/y and divide(x,y) return the same value.
+     */
+    function int divide(int x, int y) {
+        var int xNeg, yNeg;
+        var int q;
+        var int answer;
+        
+        let xNeg = x < 0;
+        let yNeg = y < 0;
+        let x = Math.abs(x);
+        let y = Math.abs(y);
+
+        if( y > x ) {
+            return 0;
+        }
+        let q = Math.divide(x, y+y);
+        if( x-(2*q*y) < y ) {
+            let answer = q+q;
+        }
+        else {
+            let answer = q+q+1;
+        }
+        
+        if(xNeg = yNeg) {
+            return answer;
+        }
+        else {
+            return -answer;
+        }
+    }
+
+    /** Returns the integer part of the square root of x. */
+    function int sqrt(int x) {
+        var int j;
+        var int y;
+        var int approx;
+        var int square;
+        
+        let y = 0;
+        let j = 7;      // = #bits / 2 - 1
+        while( ~(j < 0) ) {
+            let approx = y + two_power[j];
+            let square = approx * approx;
+            if( ~(square > x) & (square > 0) ) {    // in case of overflow
+                let y = approx;
+            }
+            let j = j - 1;
+        }
+        return y;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+    if(a>b){
+        return a;
+    }
+    else {
+        return b;
+    }
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+        if(a>b){
+        return b;
+    }
+    else {
+        return a;
+    }
+    }
+
+    function int twoToThe(int j)
+    {
+        var int val;
+        let val = 1;
+        while(j>0)
+        {
+            let val = val+val;
+            let j=j-1;
+        }
+        return val;
+    }
+    function boolean bit(int x, int i) {
+        return ~((x & two_power[i]) = 0);
+    }
+}
